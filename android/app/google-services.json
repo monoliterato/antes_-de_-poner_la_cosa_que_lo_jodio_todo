@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "623859680979",
+    "project_id": "aplicacion-3abdb",
+    "storage_bucket": "aplicacion-3abdb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:623859680979:android:72c32f238a7a4b88677626",
+        "android_client_info": {
+          "package_name": "com.example.aplicacion"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "623859680979-4flejjqocp1kvq6217gap300j1jtabuk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzNXmUNgizGlQpkIsRChvVuv3u6KVSzI8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "623859680979-4flejjqocp1kvq6217gap300j1jtabuk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "623859680979-raa4jvs6vki9fmrttu89pu9omvfe9m5s.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.aplicacion"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
