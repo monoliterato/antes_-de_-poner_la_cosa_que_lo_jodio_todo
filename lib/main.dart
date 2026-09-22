@@ -4,16 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-//ñibreria de go router
+//libreria de go router
 
 import 'package:aplicacion/router.dart';
 
 
-
+//cosa
+import 'package:flutter_scene/build_hooks.dart';
+import 'package:hooks/hooks.dart';
 
 
 
 void main() async {
+
+
+  
+//integracion de flutter scene
+/*await build(args, (input, output) async {
+    buildScenes(buildInput: input, buildOutput: output);
+    await buildMaterials(buildInput: input, buildOutput: output);
+  });
+
+*/
 
 //integracion de firebase
 

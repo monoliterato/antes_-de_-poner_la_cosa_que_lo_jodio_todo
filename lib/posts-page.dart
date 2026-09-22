@@ -56,7 +56,7 @@ class _PostPageState extends State<PostPage> {
                 'POST',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
+                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 50,
                   
