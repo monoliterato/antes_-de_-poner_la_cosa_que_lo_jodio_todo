@@ -121,28 +121,46 @@ class Modelos extends StatefulWidget {
 }
 
 class _ModelosState extends State<Modelos> {
-  double rotarx = 45.0 * math.pi / 180.0;
-  double rotary = 45.0 * math.pi / 180.0;
+  double rotarx = 90.0 * math.pi / 180.0;
+  double rotary = 1.0 * math.pi / 180.0;
   vm.Quaternion rotationx = vm.Quaternion.axisAngle(
     vm.Vector3(0, 1, 0),
     90.0 * math.pi / 180.0,
   );
   vm.Quaternion rotationy = vm.Quaternion.axisAngle(
     vm.Vector3(1, 0, 0),
-    45.0 * math.pi / 180.0,
+    1.0 * math.pi / 180.0,
   );
   vm.Vector3 escala = vm.Vector3.all(8.0);
+  bool _isMoving = true;
+  double _animatedSeconds = 0.0;
+  Duration _lastElapsed = Duration.zero;
   //vm.Quaternion rotex = vm.Quaternion.axisAngle(vm.Vector3(1,0,0), 0);
   //vm.Quaternion rotey = vm.Quaternion.axisAngle(vm.Vector3(0,1,0), 0);
+  void detener()async{
+    _isMoving=false;
+ await Future.delayed(const Duration(seconds: 3));
+ _isMoving=true;
+ print('llamada');
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanUpdate: (details) {
         setState(() {
-          rotary += details.delta.dy * 0.01;
+          
+            rotary = (rotary + details.delta.dy * 0.01)
+              .clamp(-1.3,1.3);//angulo pero con restricciones clamp lo restringe
           rotationy = vm.Quaternion.axisAngle(vm.Vector3(1, 0, 0), rotary);
+       
+        
+          print(rotary);
           rotarx += details.delta.dx * 0.01;
-          rotationx = vm.Quaternion.axisAngle(vm.Vector3(0, 1, 0), rotarx);
+          rotationx = vm.Quaternion.axisAngle(vm.Vector3(0, -1, 0), rotarx);
+          detener();
+          
           //escala += vm.Vector3.all(details.delta.dx);
           //print(details.delta.dx,);
           // rotex += vm.Quaternion.axisAngle(vm.Vector3(1,0,0), details.delta.dx*0.0001);
@@ -160,10 +178,20 @@ class _ModelosState extends State<Modelos> {
         ),
         child: SceneView.declarative(
           cameraBuilder: (elapsed) {
+            final delta = (elapsed - _lastElapsed).inMilliseconds / 1000.0;
+            _lastElapsed = elapsed;
+
+
+            if(_isMoving){
+
+
+              _animatedSeconds+= delta;
+            }
+          
             final double radio = 20;
-            final double t = elapsed.inMicroseconds / 2110000.0;
-            final double camx = math.sin(t) * radio;
-            final double camz = math.cos(t) * radio;
+            
+            final double camx = math.sin(_animatedSeconds) * radio;
+            final double camz = math.cos(_animatedSeconds) * radio;
             return PerspectiveCamera(
               position: vm.Vector3(camx, 2, camz),
               target: vm.Vector3(0, 4, 0),
@@ -172,13 +200,9 @@ class _ModelosState extends State<Modelos> {
           },
           children: [
             SceneNode(
-              rotation: rotationx*rotationy,
-                   scale: escala,
-              children: [
-                SceneModel(
-                  'assets/3d/modelo.glb',
-                ),
-              ],
+              rotation: rotationx * rotationy,
+              scale: escala,
+              children: [SceneModel('assets/3d/modelo.glb')],
             ),
           ],
         ),

@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+
+class EditarModelo extends StatefulWidget {
+  const EditarModelo({super.key});
+
+  @override
+  State<EditarModelo> createState() => _EditarModeloState();
+}
+
+class _EditarModeloState extends State<EditarModelo> {
+  TextEditingController controllerTitulo = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(left: 40.0, right: 40.0),
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        children: [
+          Container(
+            margin: EdgeInsets.only(top: 20.0, bottom: 40.0),
+            child: Text(
+              'AÑADIR NUEVA PUBLICACION',
+              style: TextStyle(color: Colors.white, fontSize: 45.0),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 30.0),
+            child: Text(
+              'TITULO DE LA PUBLICACION',
+              style: TextStyle(color: Colors.white, fontSize: 30.0),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 70.0),
+            width: 250,
+            child: TextField(
+              controller: controllerTitulo,
+              obscureText: false,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'TITULO',
+              ),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 30.0),
+            child: Text(
+              'DESCRIPCION CORTA DE LA PUBLICACION',
+              style: TextStyle(color: Colors.white, fontSize: 30.0),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 70.0),
+            child: TextFormField(
+              maxLines: 3, // Número máximo de líneas visibles
+              keyboardType: TextInputType
+                  .multiline, // Habilita múltiples líneas en el teclado
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.0, // Tamaño de la letra que escribe el usuario
+              ),
+              decoration: InputDecoration(
+                labelText: 'Escribe tus notas aquí',
+                labelStyle: TextStyle(color: Colors.white),
+                hintStyle: TextStyle(color: Colors.white),
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Text(
+            'SUBIR LA IMAGEN PRINCIPAL DE LA PUBLICACION',
+            style: TextStyle(color: Colors.white, fontSize: 30.0),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 70.0),
+            child: SvgPicture.asset(
+              'assets/images/subir-dos.svg',
+              color: Colors.white,
+              width: 350,
+              height: 350,
+            ),
+          ),
+          Text(
+            'DESCRIPCION COMPLETA DE LA PUBLICACION',
+            style: TextStyle(color: Colors.white, fontSize: 30.0),
+          ),
+          TextFormField(
+            maxLines: 8, // Número máximo de líneas visibles
+            keyboardType: TextInputType
+                .multiline, // Habilita múltiples líneas en el teclado
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.0, // Tamaño de la letra que escribe el usuario
+            ),
+            decoration: InputDecoration(
+              labelText: 'Escribe tus notas aquí',
+              labelStyle: TextStyle(color: Colors.white),
+              hintStyle: TextStyle(color: Colors.white),
+              border: OutlineInputBorder(),
+            ),
+          ),
+          Text(
+            'SUBIR MAS IMAGENES PARA LA PUBLICACION',
+            style: TextStyle(color: Colors.white, fontSize: 30.0),
+          ),
+
+          Container(height: 100),
+        ],
+      ),
+    );
+  }
+}

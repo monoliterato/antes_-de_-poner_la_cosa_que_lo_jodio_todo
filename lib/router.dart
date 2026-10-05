@@ -6,13 +6,25 @@ import 'package:flutter/material.dart';
 //importaciones de paginas generales
 import 'home.dart';
 import 'home-page.dart';
-import 'post-unico.dart';
-import 'posts-page.dart';
-import 'modelo-unico.dart';
-import 'modelos.dart';
-import 'porfile.dart';
+import 'paginas_de_loggeo/porfile.dart';
 
 
+
+//importacion de paginas de modelos
+
+import 'paginas_de_modelos/modelos.dart';
+import 'paginas_de_modelos/modelo-unico.dart';
+import 'paginas_de_modelos/anadir-modelo.dart';
+import 'paginas_de_modelos/editar-modelo.dart';
+
+
+
+//importacion de las paginas de posts
+
+import 'paginas_de_post/posts-page.dart';
+import 'paginas_de_post/post-unico.dart';
+import 'paginas_de_post/anadir-post.dart';
+import 'paginas_de_post/editar-post.dart';
 
 //importacion de rutas referidas a loggeo
 
@@ -53,6 +65,7 @@ final GoRouter router = GoRouter(
                   path: 'porfile',
                   builder: (context, state) => const Porfile(),
                 ),
+                 
               ],
             ),
           ],
@@ -68,6 +81,14 @@ final GoRouter router = GoRouter(
                   path: 'modelo-unico',
                   builder: (context, state) => const ModeloUnico(),
                 ),
+                GoRoute(
+                  path: 'anadir-modelo',
+                  builder: (context, state) => const AnadirModelo(),
+                ),
+                GoRoute(
+                  path: 'editar-modelo',
+                  builder: (context, state) => const EditarModelo(),
+                ),
               ],
             ),
           ],
@@ -82,6 +103,15 @@ final GoRouter router = GoRouter(
                 GoRoute(
                   path: 'post-unico',
                   builder: (context, state) => const PostUnico(),
+                ),
+                GoRoute(
+                  path: 'anadir-post',
+                  builder: (context, state) => const AnadirPost(),
+                ),
+               
+                GoRoute(
+                  path: 'editar-post',
+                  builder: (context, state) => const EditarPost(),
                 ),
               ],
             ),

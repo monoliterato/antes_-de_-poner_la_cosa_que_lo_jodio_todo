@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:go_router/go_router.dart';
+import 'metodos_posts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+
 
 class ImageData {
   final String id;
@@ -38,6 +43,9 @@ class PostPage extends StatefulWidget {
 }
 
 class _PostPageState extends State<PostPage> {
+
+
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -71,12 +79,47 @@ class _PostPageState extends State<PostPage> {
                 ImageCard(imageData: imageList[index]),
             mainAxisSpacing: 15.0,
             crossAxisSpacing: 10.0,
+            
+          ),
+
+
+          SliverToBoxAdapter(
+            child: Container(
+              //padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
+             margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 80.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  context.go('/post-page/anadir-post');
+                },
+                child: Text(
+                  'final para añadir mas post',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                     color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                  fontSize: 50,
+                  
+                ),
+              ),
+            ),
+          ),
           ),
         ],
       ),
     );
   }
 }
+
+
+
+
+
+
+//el diseño de una tarjeta
+
+
+
+
 
 class ImageCard extends StatelessWidget {
   const ImageCard({required this.imageData});
