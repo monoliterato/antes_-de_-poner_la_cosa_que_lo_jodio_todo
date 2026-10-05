@@ -41,6 +41,8 @@ dependencies:
   flutter_scene: ^0.23.0
   cloud_firestore: ^6.10.0
   flutter_svg: ^2.3.0
+  flutter_dotted_border: ^0.0.2
+  dotted_border: ^3.1.0
 
 dev_dependencies:
   flutter_test:

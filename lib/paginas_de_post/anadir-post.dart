@@ -78,6 +78,10 @@ class _AnadirPostState extends State<AnadirPost> {
             ),
           ),
           Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white, width: 2.0),
+              borderRadius: BorderRadius.circular(30.0),
+            ),
             margin: EdgeInsets.only(bottom: 100.0),
             child: SvgPicture.asset(
               'assets/images/subir-dos.svg',
