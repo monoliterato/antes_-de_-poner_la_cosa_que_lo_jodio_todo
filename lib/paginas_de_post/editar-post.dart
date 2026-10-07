@@ -89,11 +89,37 @@ class _EditarPostState extends State<EditarPost> {
             'SUBIR MAS IMAGENES PARA LA PUBLICACION',
             style: TextStyle(color: Colors.white, fontSize: 30.0),
           ),
-          
-          Container(
-            height: 100,
-            
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {},
+                child: Text(
+                  'AÑADIR POST',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {},
+                child: Text(
+                  'ELIMINAR POST',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ],
           ),
+          Container(height: 100),
         ],
       ),
     );
