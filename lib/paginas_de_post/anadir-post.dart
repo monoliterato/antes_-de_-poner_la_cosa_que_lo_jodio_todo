@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'metodos_posts.dart';
 
 class AnadirPost extends StatefulWidget {
   const AnadirPost({super.key});
@@ -10,6 +14,10 @@ class AnadirPost extends StatefulWidget {
 }
 
 class _AnadirPostState extends State<AnadirPost> {
+  //imagen a subir
+  File? image_to_upload;
+
+  //campos de texto
   TextEditingController controllerTitulo = TextEditingController();
   TextEditingController controllerDescripcionCorta = TextEditingController();
   TextEditingController controllerDescripcionCompleta = TextEditingController();
@@ -94,15 +102,48 @@ class _AnadirPostState extends State<AnadirPost> {
               borderRadius: BorderRadius.circular(30.0),
             ),
             margin: EdgeInsets.only(bottom: 100.0),
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: SvgPicture.asset(
-                'assets/images/subir-dos.svg',
-                colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
-                width: 350,
-                height: 350,
-              ),
-              label: const SizedBox.shrink(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                image_to_upload != null
+                    ? Image.file(image_to_upload!, width: 350, height: 350)
+                    : SvgPicture.asset(
+                        'assets/images/subir-dos.svg',
+                        color: Colors.white,
+                        width: 350,
+                        height: 350,
+                      ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          final imagenSeleccionada = await getImage();
+                          setState(() {
+                            image_to_upload = File(imagenSeleccionada!.path);
+                          });
+                        },
+                        child: const Text('seleccionar imagen'),
+                      ),
+                      const SizedBox(width: 20.0),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final uploadResult =
+                              await uploadImageToFirebaseStorage(
+                                XFile(image_to_upload!.path),
+                                'postId',
+                              );
+                        },
+                        child: const Text('cargar imagen'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
 
