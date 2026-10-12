@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:aplicacion/paginas_de_post/metodos_posts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'metodos_posts.dart';
+
+import 'package:multi_image_picker_view/multi_image_picker_view.dart';
 
 class AnadirPost extends StatefulWidget {
   const AnadirPost({super.key});
@@ -14,13 +17,43 @@ class AnadirPost extends StatefulWidget {
 }
 
 class _AnadirPostState extends State<AnadirPost> {
+  final firestoreService _firestoreService = firestoreService();
+
   //imagen a subir
   File? image_to_upload;
+  String? _imageUrl;
+  bool _isSaving = false;
 
   //campos de texto
   TextEditingController controllerTitulo = TextEditingController();
   TextEditingController controllerDescripcionCorta = TextEditingController();
   TextEditingController controllerDescripcionCompleta = TextEditingController();
+
+  Future<List<ImageFile>> pickImages({
+    required bool allowMultiple,
+    required int maxImages,
+  }) async {
+    final pickedFiles = await ImagePicker().pickMultiImage();
+
+    return pickedFiles.take(maxImages).map((file) {
+      final String extension = file.path.split('.').last;
+      return ImageFile(file.path, name: file.name, extension: extension);
+    }).toList();
+  }
+
+  late final MultiImagePickerController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = MultiImagePickerController(
+      maxImages: 15,
+      images: <ImageFile>[],
+      picker: (int pickCount, Object? params) async {
+        return await pickImages(allowMultiple: true, maxImages: pickCount);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +143,6 @@ class _AnadirPostState extends State<AnadirPost> {
                     ? Image.file(image_to_upload!, width: 350, height: 350)
                     : SvgPicture.asset(
                         'assets/images/subir-dos.svg',
-                        color: Colors.white,
                         width: 350,
                         height: 350,
                       ),
@@ -123,8 +155,10 @@ class _AnadirPostState extends State<AnadirPost> {
                       ElevatedButton(
                         onPressed: () async {
                           final imagenSeleccionada = await getImage();
+                          if (imagenSeleccionada == null || !mounted) return;
                           setState(() {
-                            image_to_upload = File(imagenSeleccionada!.path);
+                            image_to_upload = File(imagenSeleccionada.path);
+                            _imageUrl = null;
                           });
                         },
                         child: const Text('seleccionar imagen'),
@@ -132,11 +166,29 @@ class _AnadirPostState extends State<AnadirPost> {
                       const SizedBox(width: 20.0),
                       ElevatedButton(
                         onPressed: () async {
-                          final uploadResult =
-                              await uploadImageToFirebaseStorage(
-                                XFile(image_to_upload!.path),
-                                'postId',
-                              );
+                          if (image_to_upload == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Selecciona una imagen primero.'),
+                              ),
+                            );
+                            return;
+                          }
+                          try {
+                            final imageUrl = await uploadImageToFirebaseStorage(
+                              XFile(image_to_upload!.path),
+                              DateTime.now().microsecondsSinceEpoch.toString(),
+                            );
+                            if (!mounted) return;
+                            setState(() => _imageUrl = imageUrl);
+                          } catch (error) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('No se pudo subir la imagen: $error'),
+                              ),
+                            );
+                          }
                         },
                         child: const Text('cargar imagen'),
                       ),
@@ -177,8 +229,56 @@ class _AnadirPostState extends State<AnadirPost> {
             'SUBIR MAS IMAGENES PARA LA PUBLICACION',
             style: TextStyle(color: Colors.white, fontSize: 30.0),
           ),
+          Container(
+            padding: EdgeInsets.all(8.0),
+            margin: EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: MultiImagePickerView(
+              controller: controller,
+              padding: const EdgeInsets.all(10),
+            ),
+          ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: _isSaving
+                ? null
+                : () async {
+                    if (image_to_upload == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Selecciona una imagen primero.'),
+                        ),
+                      );
+                      return;
+                    }
+
+                    setState(() => _isSaving = true);
+                    try {
+                      final imageUrl =
+                          _imageUrl ??
+                          await uploadImageToFirebaseStorage(
+                            XFile(image_to_upload!.path),
+                            DateTime.now().microsecondsSinceEpoch.toString(),
+                          );
+                      await _firestoreService.addPost(
+                        controllerTitulo.text,
+                        controllerDescripcionCorta.text,
+                        controllerDescripcionCompleta.text,
+                        imageUrl,
+                      );
+                    } catch (error) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('No se pudo añadir la publicación: $error'),
+                        ),
+                      );
+                    } finally {
+                      if (mounted) setState(() => _isSaving = false);
+                    }
+                  },
             child: Text(
               'AÑADIR POST',
               textAlign: TextAlign.center,

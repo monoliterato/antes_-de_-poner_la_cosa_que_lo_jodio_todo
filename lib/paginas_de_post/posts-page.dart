@@ -1,11 +1,13 @@
+import 'package:aplicacion/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
+
 import 'metodos_posts.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
-
+/*
 class ImageData {
   final String id;
   final String imageUrl;
@@ -34,7 +36,7 @@ const imageList = [
   ImageData(id: 'id-018', imageUrl: 'assets/images/6.jpg'),
   ImageData(id: 'id-019', imageUrl: 'assets/images/7.jpg'),
 ];
-
+*/
 class PostPage extends StatefulWidget {
   const PostPage({super.key});
 
@@ -43,116 +45,262 @@ class PostPage extends StatefulWidget {
 }
 
 class _PostPageState extends State<PostPage> {
-
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(8.0),
-      margin: EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
-              child: Text(
-                'POST',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                   color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 50,
-                  
-                ),
-              ),
-            ),
-          ),
-          SliverMasonryGrid.count(
-            crossAxisCount: 2,
-            childCount: imageList.length,
-            itemBuilder: (context, index) =>
-                ImageCard(imageData: imageList[index]),
-            mainAxisSpacing: 15.0,
-            crossAxisSpacing: 10.0,
-            
-          ),
-
-
-          SliverToBoxAdapter(
-            child: Container(
-              //padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
-             margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 80.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  context.go('/post-page/anadir-post');
-                },
-                child: Text(
-                  'final para añadir mas post',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                     color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                  fontSize: 50,
-                  
-                ),
-              ),
-            ),
-          ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-
-
-
-
-//el diseño de una tarjeta
-
-
-
-
-
-class ImageCard extends StatelessWidget {
-  const ImageCard({required this.imageData});
-
-  final ImageData imageData;
+  firestoreService _firestoreService = firestoreService();
 
   @override
   Widget build(BuildContext context) {
     return Stack(
-      alignment: AlignmentGeometry.bottomStart,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16.0),
-          child: Image.asset(imageData.imageUrl, fit: BoxFit.cover),
-        ),
         Container(
-          height: 100,
-          padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-
+          padding: EdgeInsets.all(8.0),
+          margin: EdgeInsets.all(8.0),
           decoration: BoxDecoration(
-            color: Color.fromARGB(150, 30, 30, 30),
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(8.0),
           ),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 80, bottom: 20),
+                  child: Text(
+                    'PUBLICACIONES',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 30,
+                    ),
+                  ),
+                ),
+              ),
+
+              StreamBuilder<QuerySnapshot>(
+                stream: _firestoreService.getPostsStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SliverToBoxAdapter(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return SliverToBoxAdapter(
+                      child: Text('Error: ${snapshot.error}'),
+                    );
+                  }
+
+                  if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                    List postsList = snapshot.data!.docs;
+                    return SliverMasonryGrid.count(
+                      crossAxisCount: 2,
+                      childCount: postsList.length,
+                      mainAxisSpacing: 15.0,
+                      crossAxisSpacing: 10.0,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot document = postsList[index];
+                        String docID = document.id;
+
+                        String titulo = document['titulo'] ?? '';
+                        String descripcionCorta =
+                            document['descripcionCorta'] ?? '';
+                        String imagenUrl = document['imagenUrl'] ?? '';
+
+                        return ImageCard(
+                          imageUrl: imagenUrl,
+                          titulo: titulo,
+                          descripcionCorta: descripcionCorta,
+                        );
+                      },
+                    );
+                  }
+                  if (snapshot.data!.docs.isEmpty) {
+                    return const SliverToBoxAdapter(
+                      child: Text(
+                        'No posts available',
+                        style: TextStyle(color: Colors.white, fontSize: 30.0),
+                      ),
+                    );
+                  } else {
+                    return const SliverToBoxAdapter(
+                      child: Text('No data available'),
+                    );
+                  }
+                },
+              ),
+
+              SliverToBoxAdapter(
+                child: Container(
+                  //padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
+                  margin: const EdgeInsets.only(top: 20.0, bottom: 130),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.go('/post-page/anadir-post');
+                    },
+                    child: Text(
+                      'AÑADIR PUBLICACION',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('dos', style: TextStyle(color: Colors.white)),
-            Text('uno', style: TextStyle(color: Colors.red, fontSize: 25)),
-          ],
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 190,
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.degradadoClaro.withOpacity(0.0),
+                    AppColors.degradadoClaro.withOpacity(0.8),
+                    AppColors.degradadoClaro.withOpacity(1.0),
+                    AppColors.degradadoClaro.withOpacity(1.0),
+                
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ],
+    );
+  }
+}
+
+//el diseño de una tarjeta
+
+class ImageCard extends StatefulWidget {
+  const ImageCard({
+    required this.imageUrl,
+    required this.titulo,
+    required this.descripcionCorta,
+  });
+
+  final String imageUrl;
+  final String titulo;
+  final String descripcionCorta;
+
+  @override
+  State<ImageCard> createState() => _ImageCardState();
+}
+
+class _ImageCardState extends State<ImageCard> {
+  bool _isImageLoaded = false;
+  bool _hasError = false;
+  late NetworkImage _networkImage;
+  late ImageStream _imageStream;
+  late ImageStreamListener _streamListener;
+
+  @override
+  void initState() {
+    super.initState();
+    _initImageLoading();
+  }
+
+  void _initImageLoading() {
+    // 1. Inicializamos el proveedor de la imagen por red
+    _networkImage = NetworkImage(widget.imageUrl);
+
+    // 2. Obtenemos el flujo de datos (Stream) de la imagen directamente del motor
+    _imageStream = _networkImage.resolve(ImageConfiguration.empty);
+
+    // 3. Creamos el listener para saber exactamente cuándo termina (con o sin caché)
+    _streamListener = ImageStreamListener(
+      (ImageInfo info, bool synchronousCall) {
+        if (mounted) {
+          setState(() {
+            _isImageLoaded = true; // ¡La imagen está lista para pintarse!
+          });
+        }
+      },
+      onError: (Object exception, StackTrace? stackTrace) {
+        if (mounted) {
+          setState(() {
+            _hasError = true;
+            _isImageLoaded = true;
+          });
+        }
+      },
+    );
+
+    // 4. Empezamos a escuchar la descarga
+    _imageStream.addListener(_streamListener);
+  }
+
+  @override
+  void dispose() {
+    // Es indispensable limpiar el listener para evitar fugas de memoria (Memory Leaks)
+    _imageStream.removeListener(_streamListener);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        context.go(
+          '/post-page/post-unico',
+          extra: {
+            'titulo': widget.titulo,
+            'descripcionCorta': widget.descripcionCorta,
+            'imagenUrl': widget.imageUrl,
+          },
+        );
+      },
+      child: AnimatedOpacity(
+        opacity: _isImageLoaded ? 1 : 0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+        child: SizedBox(
+          height: _isImageLoaded ? null : 300,
+          child: _hasError
+              ? const Center(child: Icon(Icons.broken_image))
+              : Stack(
+                  alignment: AlignmentGeometry.bottomStart,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16.0),
+                      child: Image(image: _networkImage, fit: BoxFit.cover),
+                    ),
+                    Container(
+                      height: 100,
+                      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(150, 30, 30, 30),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.titulo,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        Text(
+                          widget.descripcionCorta,
+                          style: TextStyle(color: Colors.red, fontSize: 25),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+        ),
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:aplicacion/paginas_de_modelos/datos-modelo.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -12,8 +13,8 @@ import 'paginas_de_loggeo/porfile.dart';
 
 //importacion de paginas de modelos
 
-import 'paginas_de_modelos/modelos.dart';
 import 'paginas_de_modelos/modelo-unico.dart';
+import 'paginas_de_modelos/modelos.dart';
 import 'paginas_de_modelos/anadir-modelo.dart';
 import 'paginas_de_modelos/editar-modelo.dart';
 
@@ -102,7 +103,17 @@ final GoRouter router = GoRouter(
               routes: [
                 GoRoute(
                   path: 'post-unico',
-                  builder: (context, state) => const PostUnico(),
+                  builder: (context, state) {
+                    final extra = state.extra;
+                    final data = extra is Map ? extra : <String, dynamic>{};
+
+                    return PostUnico(
+                      titulo: data['titulo']?.toString() ?? 'Sin título',
+                      descripcionCorta: data['descripcionCorta']?.toString() ?? 'Sin descripción',
+                      imageUrl: data['imagenUrl']?.toString() ?? '',
+                    
+                    );
+                  },
                 ),
                 GoRoute(
                   path: 'anadir-post',
@@ -135,6 +146,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/change-password',
       builder: (context, state) => const ChangePassword(),
+    ),
+    GoRoute(
+      path: '/datos-modelo',
+      builder: (context, state) => const DatosModelo(),
     ),
   ],
 );

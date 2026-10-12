@@ -78,7 +78,6 @@ class _EditarModeloState extends State<EditarModelo> {
             margin: EdgeInsets.only(bottom: 70.0),
             child: SvgPicture.asset(
               'assets/images/subir-dos.svg',
-              color: Colors.white,
               width: 350,
               height: 350,
             ),

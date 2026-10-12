@@ -7,8 +7,7 @@ class BaseLoggeo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // IMPORTANTE: Fondo transparente para ver la app de fondo
-      backgroundColor: Colors.black.withValues(alpha: 0.5),
+      backgroundColor: Colors.black.withValues(alpha: 0.45),
       body: Center(
         child: Container(
           margin: const EdgeInsets.all(30),

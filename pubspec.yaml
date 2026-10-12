@@ -45,6 +45,9 @@ dependencies:
   dotted_border: ^3.1.0
   image_picker: ^1.2.4
   firebase_storage: ^13.6.0
+  multi_image_picker_view: ^3.0.0
+  model_viewer_plus: ^1.10.0
+  flutter_markdown: ^0.7.7+1
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +90,7 @@ flutter:
    - assets/3d/modelo.glb
    - assets/images/subir-imagen.svg
    - assets/images/subir-dos.svg
+   - assets/images/fondo.svg
 
    
 

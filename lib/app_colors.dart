@@ -11,6 +11,7 @@ class AppColors {
 
 static const gradientColors = LinearGradient(
   colors: [
+    Color.fromARGB(255, 38, 35, 56),
     degradadoOscuro,
     degradadoClaro,
   ],

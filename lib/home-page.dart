@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 //librerias de go router
 import 'package:go_router/go_router.dart';
 
-
 //librerias de firebase
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -14,93 +13,84 @@ import 'app_colors.dart';
 //librerias de las paginas anexadas
 import 'package:aplicacion/paginas_de_loggeo/sign-in.dart';
 
-
-
-
-
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
-  
-  
-  const HomePage({super.key, 
-  required this.navigationShell,
-  
-  });
 
-  
+  const HomePage({super.key, required this.navigationShell});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
 
+class _HomePageState extends State<HomePage> {
+  bool _isSignInOpen = false;
 
-
-  // Método para cambiar de pestaña usando GoRouter
   void _onTap(int index) {
-    navigationShell.goBranch(
+    widget.navigationShell.goBranch(
       index,
-      // Si el usuario toca la pestaña activa actual, vuelve a la ruta inicial de esa pestaña
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 
+  Future<void> _openSignIn() async {
+    setState(() => _isSignInOpen = true);
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
 
-
-
-// Metodo para lanzar la pestaña sobre otras
-  void abrirNotificacion(BuildContext context) {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        opaque: false, // Evita que la pantalla de atrás se destruya o esconda
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return const SignIn(); // 2. Llama a tu clase aquí
-        },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // Opcional: Agrega una transición de aparición suave (Fade)
-          return FadeTransition(opacity: animation, child: child);
-        },
-      ),
-    );
+    try {
+      await Navigator.push<void>(
+        context,
+        PageRouteBuilder<void>(
+          opaque: false,
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return const SignIn();
+          },
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSignInOpen = false);
+      }
+    }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold (
       extendBody: true,
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
-      // El child ahora es el contenedor que maneja GoRouter internamente
       body: Container(
         decoration: BoxDecoration(gradient: AppColors.gradientColors),
-        child: navigationShell,
+        child: TickerMode(
+          enabled: !_isSignInOpen,
+          child: widget.navigationShell,
+        ),
       ),
-
-
-
-
       bottomNavigationBar: SafeArea(
         child: Container(
-          padding: EdgeInsets.all(8.0),
-          margin: EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color:  Colors.transparent,
-            borderRadius: const BorderRadius.all(Radius.circular(25.0)),
+          padding: const EdgeInsets.all(8.0),
+          margin: const EdgeInsets.all(8.0),
+          decoration: const BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.all(Radius.circular(25.0)),
           ),
           child: ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(25.0)),
             child: BottomNavigationBar(
-              currentIndex: navigationShell.currentIndex,
+              currentIndex: widget.navigationShell.currentIndex,
               onTap: _onTap,
               backgroundColor: AppColors.degradadoOscuro,
               unselectedItemColor: AppColors.blancoPrimario,
               selectedItemColor: AppColors.magentaClaro,
-
               items: const [
                 BottomNavigationBarItem(
                   icon: Icon(Icons.home),
                   label: 'Inicio',
                 ),
-
                 BottomNavigationBarItem(
                   icon: Icon(Icons.smart_toy_outlined),
                   label: 'Modelos',
@@ -114,31 +104,29 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       floatingActionButton: StreamBuilder<dynamic>(
-        stream: FirebaseAuth.instance.authStateChanges(), // Replace with your stream
+        stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return FloatingActionButton(
-              shape: const CircleBorder(),
-              onPressed: () {
-                abrirNotificacion(context);
-              },
-              child: Icon(Icons.data_array),
-            );
-          } else if (snapshot.hasError) {
+          if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
-          } else if (snapshot.hasData) {
-            return FloatingActionButton(
-              shape: const CircleBorder(),
-              onPressed: () {
-                context.go('/homePage/porfile');
-              },
-              child: Icon(Icons.person),
-            );
-          } else {
-            return Container();
           }
+          if (!snapshot.hasData) {
+            return FloatingActionButton.extended(
+              heroTag: 'global-sign-in',
+              shape: const StadiumBorder(),
+              onPressed: _openSignIn,
+              label: const Text('INGRESAR'),
+              icon: const Icon(Icons.attribution_outlined),
+            );
+          }
+          return FloatingActionButton.extended(
+            heroTag: 'global-profile',
+            shape: const StadiumBorder(),
+            onPressed: () => context.go('/homePage/porfile'),
+            icon: const Icon(Icons.person),
+            label: const Text('PERFIL'),
+          );
         },
       ),
     );

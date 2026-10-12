@@ -4,30 +4,20 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 
+import 'package:multi_image_picker_view/multi_image_picker_view.dart';
+
+
 final FirebaseStorage storage = FirebaseStorage.instance;
 
-Future<bool> uploadImageToFirebaseStorage(XFile image, String postId) async {
-  try {
-    // Crear una referencia al archivo en Firebase Storage
-    Reference storageRef = storage.ref().child('post_images/$postId/${image.name}');
+//clase para manejar la subida de imagenes a Firebase Storage
 
-    // Subir la imagen a Firebase Storage
-    UploadTask uploadTask = storageRef.putFile(File(image.path));
-
-    // Esperar a que la subida se complete
-    await uploadTask;
-
-    // Obtener la URL de descarga de la imagen
-    String downloadUrl = await storageRef.getDownloadURL();
-
-    // Aquí puedes guardar la URL de descarga en Firestore si lo deseas
-    print('Imagen subida con éxito. URL de descarga: $downloadUrl');
-    return true;
-  } catch (e) {
-    print('Error al subir la imagen: $e');
-    return false;
-  }
-}  
+Future<String> uploadImageToFirebaseStorage(XFile image, String postId) async {
+  final Reference storageRef = storage.ref().child(
+    'post_images/$postId-${image.name}',
+  );
+  await storageRef.putFile(File(image.path));
+  return storageRef.getDownloadURL();
+}
 
 
 
@@ -54,17 +44,23 @@ Future<XFile?> getImage() async {
 
 //clase para manejar la conexion con firestore y realizar las operaciones CRUD
 
-class fireStoreService{
+class firestoreService{
 
 
 //get
 final CollectionReference posts = FirebaseFirestore.instance.collection('posts');
 //Create
-Future<void> addPost(String titulo, String descripcionCorta, String descripcionCompleta) async {
+Future<void> addPost(
+  String titulo,
+  String descripcionCorta,
+  String descripcionCompleta,
+  String imageUrl,
+) async {
   await posts.add({
     'titulo': titulo,
     'descripcionCorta': descripcionCorta,
     'descripcionCompleta': descripcionCompleta,
+    'imagenUrl': imageUrl,
     'timestamp': Timestamp.now(),
   });
 }

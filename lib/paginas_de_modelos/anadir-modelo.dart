@@ -78,7 +78,6 @@ class _AnadirModeloState extends State<AnadirModelo> {
             margin: EdgeInsets.only(bottom: 70.0),
             child: SvgPicture.asset(
               'assets/images/subir-dos.svg',
-              color: Colors.white,
               width: 350,
               height: 350,
             ),

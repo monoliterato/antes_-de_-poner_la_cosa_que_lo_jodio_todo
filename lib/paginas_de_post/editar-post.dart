@@ -62,7 +62,6 @@ class _EditarPostState extends State<EditarPost> {
           ),
           SvgPicture.asset(
             'assets/images/subir-dos.svg',
-            color: Colors.white,
             width: 350,
             height: 350,
           ),
