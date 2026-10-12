@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:aplicacion/paginas_de_post/metodos_posts.dart';
+import 'package:aplicacion/paginas_de_post/metodos-posts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'metodos_posts.dart';
+import 'metodos-posts.dart';
 
 import 'package:multi_image_picker_view/multi_image_picker_view.dart';
 

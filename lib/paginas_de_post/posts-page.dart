@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 
-import 'metodos_posts.dart';
+import 'metodos-posts.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 

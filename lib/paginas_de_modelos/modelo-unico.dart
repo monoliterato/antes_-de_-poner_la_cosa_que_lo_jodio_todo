@@ -112,40 +112,20 @@ class ModeloUnico extends StatefulWidget {
 }
 
 class _ModeloUnicoState extends State<ModeloUnico> {
-
-
-
-
-
-
-
-bool _isDataOpen=false ;
-
   Future<void> _openData() async {
-    setState(() => _isDataOpen = true);
-    await WidgetsBinding.instance.endOfFrame;
-    if (!mounted) return;
-
-    try {
-      await Navigator.push<void>(
-        context,
-        PageRouteBuilder<void>(
-          opaque: false,
-          pageBuilder: (context, animation, secondaryAnimation) {
-            return const DatosModelo();
-          },
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isDataOpen = false);
-      }
-    }
+    await Navigator.push<void>(
+      context,
+      PageRouteBuilder<void>(
+        opaque: false,
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return const DatosModelo();
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
   }
-
 
   @override
   Widget build(BuildContext context) {

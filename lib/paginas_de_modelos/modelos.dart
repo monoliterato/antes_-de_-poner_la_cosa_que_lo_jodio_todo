@@ -59,66 +59,74 @@ class Modelos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: _tarjetas.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final tarjeta = _tarjetas[index];
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: _tarjetas.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final tarjeta = _tarjetas[index];
 
-                return Card(
-                  clipBehavior: Clip.antiAlias,
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Image.asset(
-                        tarjeta.imagen,
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
+              return Card(
+                clipBehavior: Clip.antiAlias,
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Image.asset(
+                      tarjeta.imagen,
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            tarjeta.titulo,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            tarjeta.descripcion,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              tarjeta.titulo,
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              tarjeta.descripcion,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: FloatingActionButton.extended(
-              onPressed: () => context.push('/modelos/modelo-unico'),
-              label: const Text('unico'),
-            ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16, top: 40),
+          child: FloatingActionButton.extended(
+            heroTag: 'modelos-modelo-unico',
+            onPressed: () => context.push('/modelos/modelo-unico'),
+            label: const Text('unico'),
           ),
-        ],
-      );
-    
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 150),
+          child: FloatingActionButton.extended(
+            heroTag: 'modelos-anadir-modelo',
+            onPressed: () => context.push('/modelos/anadir-modelo'),
+            label: const Text('añadir modelo'),
+          ),
+        ),
+      ],
+    );
   }
 }

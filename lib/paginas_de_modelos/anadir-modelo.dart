@@ -21,7 +21,7 @@ class _AnadirModeloState extends State<AnadirModelo> {
           Container(
             margin: EdgeInsets.only(top: 20.0, bottom: 40.0),
             child: Text(
-              'AÑADIR NUEVA PUBLICACION',
+              'AÑADIR NUEVO MODELO',
               style: TextStyle(color: Colors.white, fontSize: 45.0),
             ),
           ),
