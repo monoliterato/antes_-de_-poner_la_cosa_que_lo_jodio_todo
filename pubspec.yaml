@@ -38,7 +38,6 @@ dependencies:
   go_router: ^18.0.1
   firebase_auth: ^6.7.0
   flutter_staggered_grid_view: ^0.7.0
-  flutter_scene: ^0.23.0
   cloud_firestore: ^6.10.0
   flutter_svg: ^2.3.0
   flutter_dotted_border: ^0.0.2
@@ -85,7 +84,6 @@ flutter:
    - assets/images/8.jpg
    - assets/images/9.jpg
    - assets/images/10.jpg
-   - flutter_scene_generated/
    - assets/3d/pixellabs-glb-3347.glb
    - assets/3d/modelo.glb
    - assets/images/subir-imagen.svg

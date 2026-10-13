@@ -9,32 +9,11 @@ import 'firebase_options.dart';
 import 'package:aplicacion/router.dart';
 
 
-//cosa
-import 'package:flutter_scene/build_hooks.dart';
-import 'package:hooks/hooks.dart';
-
-
-
 void main() async {
-
-
-  
-//integracion de flutter scene
-/*await build(args, (input, output) async {
-    buildScenes(buildInput: input, buildOutput: output);
-    await buildMaterials(buildInput: input, buildOutput: output);
-  });
-
-*/
-
-//integracion de firebase
-
-WidgetsFlutterBinding.ensureInitialized();
-await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
-
-//termino de la integracion de firebase
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(MyApp());
 }
@@ -50,4 +29,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

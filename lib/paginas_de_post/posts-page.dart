@@ -99,14 +99,13 @@ class _PostPageState extends State<PostPage> {
                       crossAxisSpacing: 10.0,
                       itemBuilder: (context, index) {
                         DocumentSnapshot document = postsList[index];
-                        String docID = document.id;
-
                         String titulo = document['titulo'] ?? '';
                         String descripcionCorta =
                             document['descripcionCorta'] ?? '';
                         String imagenUrl = document['imagenUrl'] ?? '';
 
                         return ImageCard(
+                          key: ValueKey(document.id),
                           imageUrl: imagenUrl,
                           titulo: titulo,
                           descripcionCorta: descripcionCorta,
@@ -168,7 +167,6 @@ class _PostPageState extends State<PostPage> {
                     AppColors.degradadoClaro.withOpacity(0.8),
                     AppColors.degradadoClaro.withOpacity(1.0),
                     AppColors.degradadoClaro.withOpacity(1.0),
-                
                   ],
                 ),
               ),
@@ -184,6 +182,7 @@ class _PostPageState extends State<PostPage> {
 
 class ImageCard extends StatefulWidget {
   const ImageCard({
+    super.key,
     required this.imageUrl,
     required this.titulo,
     required this.descripcionCorta,
@@ -197,58 +196,15 @@ class ImageCard extends StatefulWidget {
   State<ImageCard> createState() => _ImageCardState();
 }
 
-class _ImageCardState extends State<ImageCard> {
-  bool _isImageLoaded = false;
-  bool _hasError = false;
-  late NetworkImage _networkImage;
-  late ImageStream _imageStream;
-  late ImageStreamListener _streamListener;
-
+class _ImageCardState extends State<ImageCard>
+    with AutomaticKeepAliveClientMixin<ImageCard> {
   @override
-  void initState() {
-    super.initState();
-    _initImageLoading();
-  }
-
-  void _initImageLoading() {
-    // 1. Inicializamos el proveedor de la imagen por red
-    _networkImage = NetworkImage(widget.imageUrl);
-
-    // 2. Obtenemos el flujo de datos (Stream) de la imagen directamente del motor
-    _imageStream = _networkImage.resolve(ImageConfiguration.empty);
-
-    // 3. Creamos el listener para saber exactamente cuándo termina (con o sin caché)
-    _streamListener = ImageStreamListener(
-      (ImageInfo info, bool synchronousCall) {
-        if (mounted) {
-          setState(() {
-            _isImageLoaded = true; // ¡La imagen está lista para pintarse!
-          });
-        }
-      },
-      onError: (Object exception, StackTrace? stackTrace) {
-        if (mounted) {
-          setState(() {
-            _hasError = true;
-            _isImageLoaded = true;
-          });
-        }
-      },
-    );
-
-    // 4. Empezamos a escuchar la descarga
-    _imageStream.addListener(_streamListener);
-  }
-
-  @override
-  void dispose() {
-    // Es indispensable limpiar el listener para evitar fugas de memoria (Memory Leaks)
-    _imageStream.removeListener(_streamListener);
-    super.dispose();
-  }
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return GestureDetector(
       onTap: () {
         context.go(
@@ -260,46 +216,49 @@ class _ImageCardState extends State<ImageCard> {
           },
         );
       },
-      child: AnimatedOpacity(
-        opacity: _isImageLoaded ? 1 : 0,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeOut,
-        child: SizedBox(
-          height: _isImageLoaded ? null : 300,
-          child: _hasError
-              ? const Center(child: Icon(Icons.broken_image))
-              : Stack(
-                  alignment: AlignmentGeometry.bottomStart,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16.0),
-                      child: Image(image: _networkImage, fit: BoxFit.cover),
-                    ),
-                    Container(
-                      height: 100,
-                      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                      decoration: BoxDecoration(
-                        color: Color.fromARGB(150, 30, 30, 30),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          widget.titulo,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        Text(
-                          widget.descripcionCorta,
-                          style: TextStyle(color: Colors.red, fontSize: 25),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-        ),
+      child: Stack(
+        alignment: AlignmentDirectional.bottomStart,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16.0),
+            child: Image.network(
+              widget.imageUrl,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                if (wasSynchronouslyLoaded || frame != null) return child;
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) => const SizedBox(
+                height: 300,
+                child: Center(child: Icon(Icons.broken_image)),
+              ),
+            ),
+          ),
+          Container(
+            height: 100,
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(150, 30, 30, 30),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(widget.titulo, style: const TextStyle(color: Colors.white)),
+              Text(
+                widget.descripcionCorta,
+                style: const TextStyle(color: Colors.red, fontSize: 25),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

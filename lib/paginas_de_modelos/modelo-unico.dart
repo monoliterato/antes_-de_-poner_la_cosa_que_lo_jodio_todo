@@ -1,108 +1,7 @@
 import 'package:aplicacion/paginas_de_modelos/datos-modelo.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:model_viewer_plus/model_viewer_plus.dart';
-
-/*
-class ModeloUnico extends StatefulWidget {
-  const ModeloUnico({super.key});
-
-  @override
-  State<ModeloUnico> createState() => _ModeloUnicoState();
-}
-
-class _ModeloUnicoState extends State<ModeloUnico> {
-  double rotarx = 90.0 * math.pi / 180.0;
-  double rotary = 1.0 * math.pi / 180.0;
-  vm.Quaternion rotationx = vm.Quaternion.axisAngle(
-    vm.Vector3(0, 1, 0),
-    90.0 * math.pi / 180.0,
-  );
-  vm.Quaternion rotationy = vm.Quaternion.axisAngle(
-    vm.Vector3(1, 0, 0),
-    1.0 * math.pi / 180.0,
-  );
-  vm.Vector3 escala = vm.Vector3.all(8.0);
-  bool _isMoving = true;
-  double _animatedSeconds = 0.0;
-  Duration _lastElapsed = Duration.zero;
-  //vm.Quaternion rotex = vm.Quaternion.axisAngle(vm.Vector3(1,0,0), 0);
-  //vm.Quaternion rotey = vm.Quaternion.axisAngle(vm.Vector3(0,1,0), 0);
-  void detener()async{
-    _isMoving=false;
- await Future.delayed(const Duration(seconds: 3));
- _isMoving=true;
- 
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanUpdate: (details) {
-        setState(() {
-
-          
-            rotary = (rotary + details.delta.dy * 0.01)
-              .clamp(-1.3,1.3);//angulo pero con restricciones clamp lo restringe
-          rotationy = vm.Quaternion.axisAngle(vm.Vector3(1, 0, 0), rotary);
-       
-        
-         
-          rotarx += details.delta.dx * 0.01;
-          rotationx = vm.Quaternion.axisAngle(vm.Vector3(0, -1, 0), rotarx);
-          detener();
-          
-          //escala += vm.Vector3.all(details.delta.dx);
-          //print(details.delta.dx,);
-          // rotex += vm.Quaternion.axisAngle(vm.Vector3(1,0,0), details.delta.dx*0.0001);
-          //rotey += vm.Quaternion.axisAngle(vm.Vector3(0,1,0), details.delta.dy*0.0001);
-          //print(rotex);
-          //print(rotey);
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.all(8.0),
-        margin: EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: SceneView.declarative(
-          cameraBuilder: (elapsed) {
-            final delta = (elapsed - _lastElapsed).inMilliseconds / 1000.0;
-            _lastElapsed = elapsed;
-
-
-            if(_isMoving){
-
-
-              _animatedSeconds+= delta;
-            }
-          
-            final double radio = 20;
-            
-            final double camx = math.sin(_animatedSeconds) * radio;
-            final double camz = math.cos(_animatedSeconds) * radio;
-            return PerspectiveCamera(
-              position: vm.Vector3(camx, 2, camz),
-              target: vm.Vector3(0, 4, 0),
-              fovRadiansY: 35 * pi / 180,
-            );
-          },
-          children: [
-            SceneNode(
-              rotation: rotationx * rotationy,
-              scale: escala,
-              children: [SceneModel('assets/3d/modelo.glb')],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-*/
 
 class ModeloUnico extends StatefulWidget {
   const ModeloUnico({super.key});
@@ -134,8 +33,10 @@ class _ModeloUnicoState extends State<ModeloUnico> {
         SizedBox(
           width: MediaQuery.sizeOf(context).width * 1,
           height: MediaQuery.sizeOf(context).height * 0.9,
-          child: const ModelViewer(
-            src: 'assets/3d/modelo.glb',
+          child: ModelViewer(
+            src: kIsWeb
+                ? 'assets/assets/3d/modelo.glb'
+                : 'assets/3d/modelo.glb',
             alt: 'Modelo 3D',
             autoRotate: true,
             cameraControls: true,

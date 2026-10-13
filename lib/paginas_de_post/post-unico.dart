@@ -53,6 +53,8 @@ class _PostUnicoState extends State<PostUnico> {
                               width: MediaQuery.of(context).size.width,
                               height: 400,
                               fit: BoxFit.cover,
+                              webHtmlElementStrategy:
+                                  WebHtmlElementStrategy.fallback,
                               loadingBuilder:
                                   (context, child, loadingProgress) {
                                     if (loadingProgress == null) return child;
@@ -141,7 +143,6 @@ class _PostUnicoState extends State<PostUnico> {
                 ),
               ),
               Positioned(
-              
                 bottom: 0,
                 height: 180,
                 width: MediaQuery.of(context).size.width,
