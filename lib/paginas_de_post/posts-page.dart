@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:aplicacion/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -99,6 +101,7 @@ class _PostPageState extends State<PostPage> {
                       crossAxisSpacing: 10.0,
                       itemBuilder: (context, index) {
                         DocumentSnapshot document = postsList[index];
+
                         String titulo = document['titulo'] ?? '';
                         String descripcionCorta =
                             document['descripcionCorta'] ?? '';
@@ -106,6 +109,7 @@ class _PostPageState extends State<PostPage> {
 
                         return ImageCard(
                           key: ValueKey(document.id),
+                          postId: document.id,
                           imageUrl: imagenUrl,
                           titulo: titulo,
                           descripcionCorta: descripcionCorta,
@@ -183,11 +187,13 @@ class _PostPageState extends State<PostPage> {
 class ImageCard extends StatefulWidget {
   const ImageCard({
     super.key,
+    required this.postId,
     required this.imageUrl,
     required this.titulo,
     required this.descripcionCorta,
   });
 
+  final String postId;
   final String imageUrl;
   final String titulo;
   final String descripcionCorta;
@@ -205,61 +211,91 @@ class _ImageCardState extends State<ImageCard>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return GestureDetector(
-      onTap: () {
-        context.go(
-          '/post-page/post-unico',
-          extra: {
-            'titulo': widget.titulo,
-            'descripcionCorta': widget.descripcionCorta,
-            'imagenUrl': widget.imageUrl,
-          },
-        );
-      },
-      child: Stack(
-        alignment: AlignmentDirectional.bottomStart,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16.0),
-            child: Image.network(
-              widget.imageUrl,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
-              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                if (wasSynchronouslyLoaded || frame != null) return child;
-                return const SizedBox(
-                  height: 300,
-                  child: Center(child: CircularProgressIndicator()),
-                );
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () {
+            context.go(
+              '/post-page/post-unico',
+              extra: {
+                'titulo': widget.titulo,
+                'descripcionCorta': widget.descripcionCorta,
+                'imagenUrl': widget.imageUrl,
               },
-              errorBuilder: (context, error, stackTrace) => const SizedBox(
-                height: 300,
-                child: Center(child: Icon(Icons.broken_image)),
-              ),
-            ),
-          ),
-          Container(
-            height: 100,
-            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(150, 30, 30, 30),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            );
+          },
+          child: Stack(
+            alignment: AlignmentDirectional.bottomStart,
             children: [
-              Text(widget.titulo, style: const TextStyle(color: Colors.white)),
-              Text(
-                widget.descripcionCorta,
-                style: const TextStyle(color: Colors.red, fontSize: 25),
+              
+
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16.0),
+                child: Image.network(
+                  widget.imageUrl,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+                  frameBuilder:
+                      (context, child, frame, wasSynchronouslyLoaded) {
+                        if (wasSynchronouslyLoaded || frame != null)
+                          return child;
+                        return const SizedBox(
+                          height: 300,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      },
+                  errorBuilder: (context, error, stackTrace) => const SizedBox(
+                    height: 300,
+                    child: Center(child: Icon(Icons.broken_image)),
+                  ),
+                ),
+              ),
+              Container(
+                height: 100,
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(150, 30, 30, 30),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.titulo,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    widget.descripcionCorta,
+                    style: const TextStyle(color: Colors.red, fontSize: 25),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        ),
+      
+      FloatingActionButton.extended(
+                heroTag: 'editar-post-${widget.postId}',
+                shape: const StadiumBorder(),
+                onPressed: () => context.go(
+                  '/post-page/editar-post',
+                  extra: {
+                    'oldIdentificador': Key,
+                    'oldTitulo': widget.titulo,
+                    'oldDescripcionCorta': widget.descripcionCorta,
+                    'oldImagenUrl': widget.imageUrl,
+                  },
+                ),
+                icon: const Icon(Icons.person),
+                label: const Text('EDITAR'),
+              ),
+      
+      
+      
+      ],
     );
   }
 }

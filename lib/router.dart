@@ -122,7 +122,18 @@ final GoRouter router = GoRouter(
                
                 GoRoute(
                   path: 'editar-post',
-                  builder: (context, state) => const EditarPost(),
+                  builder: (context, state) {
+                    final extra =state.extra;
+                    final data =extra is Map ? extra : <String, dynamic>{};
+                    return EditarPost(
+                      oldIdentificador: data['identificador']?.toString() ?? 'Sin título',
+                      oldTitulo: data['titulo']?.toString() ?? 'Sin título',
+                      oldDescripcionCorta: data['descripcionCorta']?.toString() ?? 'Sin descripción',
+                      oldImageUrl: data['imagenUrl']?.toString() ?? '',
+                    
+                    );
+
+                  }
                 ),
               ],
             ),
