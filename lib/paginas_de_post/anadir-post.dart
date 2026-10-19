@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:aplicacion/paginas_de_post/metodos-posts.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,7 +19,8 @@ class _AnadirPostState extends State<AnadirPost> {
   final firestoreService _firestoreService = firestoreService();
 
   //imagen a subir
-  File? image_to_upload;
+  XFile? image_to_upload;
+  Uint8List? _imageBytes;
   String? _imageUrl;
   bool _isSaving = false;
 
@@ -35,10 +35,16 @@ class _AnadirPostState extends State<AnadirPost> {
   }) async {
     final pickedFiles = await ImagePicker().pickMultiImage();
 
-    return pickedFiles.take(maxImages).map((file) {
+    return Future.wait(pickedFiles.take(maxImages).map((file) async {
       final String extension = file.path.split('.').last;
-      return ImageFile(file.path, name: file.name, extension: extension);
-    }).toList();
+      return ImageFile(
+        file.path,
+        name: file.name,
+        extension: extension,
+        bytes: await file.readAsBytes(),
+        path: kIsWeb ? null : file.path,
+      );
+    }));
   }
 
   late final MultiImagePickerController controller;
@@ -139,8 +145,8 @@ class _AnadirPostState extends State<AnadirPost> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                image_to_upload != null
-                    ? Image.file(image_to_upload!, width: 350, height: 350)
+                _imageBytes != null
+                    ? Image.memory(_imageBytes!, width: 350, height: 350)
                     : SvgPicture.asset(
                         'assets/images/subir-dos.svg',
                         width: 350,
@@ -156,8 +162,12 @@ class _AnadirPostState extends State<AnadirPost> {
                         onPressed: () async {
                           final imagenSeleccionada = await getImage();
                           if (imagenSeleccionada == null || !mounted) return;
+                          final imageBytes =
+                              await imagenSeleccionada.readAsBytes();
+                          if (!mounted) return;
                           setState(() {
-                            image_to_upload = File(imagenSeleccionada.path);
+                            image_to_upload = imagenSeleccionada;
+                            _imageBytes = imageBytes;
                             _imageUrl = null;
                           });
                         },
@@ -176,7 +186,7 @@ class _AnadirPostState extends State<AnadirPost> {
                           }
                           try {
                             final imageUrl = await uploadImageToFirebaseStorage(
-                              XFile(image_to_upload!.path),
+                              image_to_upload!,
                               DateTime.now().microsecondsSinceEpoch.toString(),
                             );
                             if (!mounted) return;
@@ -259,7 +269,7 @@ class _AnadirPostState extends State<AnadirPost> {
                       final imageUrl =
                           _imageUrl ??
                           await uploadImageToFirebaseStorage(
-                            XFile(image_to_upload!.path),
+                            image_to_upload!,
                             DateTime.now().microsecondsSinceEpoch.toString(),
                           );
                       await _firestoreService.addPost(

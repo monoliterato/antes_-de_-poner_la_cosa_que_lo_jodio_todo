@@ -1,5 +1,11 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'metodos-modelo.dart';
 
 class AnadirModelo extends StatefulWidget {
   const AnadirModelo({super.key});
@@ -9,7 +15,84 @@ class AnadirModelo extends StatefulWidget {
 }
 
 class _AnadirModeloState extends State<AnadirModelo> {
-  TextEditingController controllerTitulo = TextEditingController();
+  final TextEditingController controllerTitulo = TextEditingController();
+  final TextEditingController _controllerDescripcionCorta =
+      TextEditingController();
+  final TextEditingController _controllerDescripcionCompleta =
+      TextEditingController();
+  final ModeloFirestoreService _modeloFirestoreService =
+      ModeloFirestoreService();
+  PlatformFile? _modeloSeleccionado;
+  Uint8List? _imagenSeleccionada;
+  bool _estaSubiendoModelo = false;
+
+  @override
+  void dispose() {
+    controllerTitulo.dispose();
+    _controllerDescripcionCorta.dispose();
+    _controllerDescripcionCompleta.dispose();
+    super.dispose();
+  }
+
+  Future<void> _cargarModelo3D() async {
+    final modelo = _modeloSeleccionado;
+    if (modelo == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Primero selecciona un modelo 3D.')),
+      );
+      return;
+    }
+
+    final titulo = controllerTitulo.text.trim();
+    if (titulo.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Escribe el título del modelo.')),
+      );
+      return;
+    }
+
+    setState(() => _estaSubiendoModelo = true);
+    try {
+      final modelId = DateTime.now().microsecondsSinceEpoch.toString();
+      final modeloUrl = await subirModelo3DAFirebase(modelo, modelId);
+      await _modeloFirestoreService.agregarModelo(
+        titulo: titulo,
+        descripcionCorta: _controllerDescripcionCorta.text.trim(),
+        descripcionCompleta: _controllerDescripcionCompleta.text.trim(),
+        modeloUrl: modeloUrl,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Modelo cargado correctamente.')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo cargar el modelo: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _estaSubiendoModelo = false);
+      }
+    }
+  }
+
+  Future<void> _seleccionarImagen() async {
+    try {
+      final imagen = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (imagen == null || !mounted) return;
+
+      final bytes = await imagen.readAsBytes();
+      if (!mounted) return;
+      setState(() => _imagenSeleccionada = bytes);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo seleccionar la imagen: $error')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +111,7 @@ class _AnadirModeloState extends State<AnadirModelo> {
           Container(
             margin: EdgeInsets.only(bottom: 30.0),
             child: Text(
-              'TITULO DE LA PUBLICACION',
+              'TITULO DEL MODELO',
               style: TextStyle(color: Colors.white, fontSize: 30.0),
             ),
           ),
@@ -40,6 +123,7 @@ class _AnadirModeloState extends State<AnadirModelo> {
               obscureText: false,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
+                labelStyle: TextStyle(color: Colors.white),
                 border: OutlineInputBorder(),
                 labelText: 'TITULO',
               ),
@@ -48,13 +132,14 @@ class _AnadirModeloState extends State<AnadirModelo> {
           Container(
             margin: EdgeInsets.only(bottom: 30.0),
             child: Text(
-              'DESCRIPCION CORTA DE LA PUBLICACION',
+              'DESCRIPCION CORTA DEL MODELO',
               style: TextStyle(color: Colors.white, fontSize: 30.0),
             ),
           ),
           Container(
             margin: EdgeInsets.only(bottom: 70.0),
             child: TextFormField(
+              controller: _controllerDescripcionCorta,
               maxLines: 3, // Número máximo de líneas visibles
               keyboardType: TextInputType
                   .multiline, // Habilita múltiples líneas en el teclado
@@ -63,7 +148,7 @@ class _AnadirModeloState extends State<AnadirModelo> {
                 fontSize: 18.0, // Tamaño de la letra que escribe el usuario
               ),
               decoration: InputDecoration(
-                labelText: 'Escribe tus notas aquí',
+                labelText: 'Describe brevemente el objeto',
                 labelStyle: TextStyle(color: Colors.white),
                 hintStyle: TextStyle(color: Colors.white),
                 border: OutlineInputBorder(),
@@ -71,22 +156,113 @@ class _AnadirModeloState extends State<AnadirModelo> {
             ),
           ),
           Text(
-            'SUBIR LA IMAGEN PRINCIPAL DE LA PUBLICACION',
+            'SUBIR EL ARCHIVO EN FORMATO GLB',
             style: TextStyle(color: Colors.white, fontSize: 30.0),
           ),
-          Container(
-            margin: EdgeInsets.only(bottom: 70.0),
-            child: SvgPicture.asset(
-              'assets/images/subir-dos.svg',
-              width: 350,
-              height: 350,
-            ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(bottom: 10.0),
+                child: SvgPicture.asset(
+                  'assets/images/subir-dos.svg',
+                  width: 350,
+                  height: 350,
+                ),
+              ),
+              if (_modeloSeleccionado != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Text(
+                    'Modelo seleccionado: ${_modeloSeleccionado!.name}',
+                    style: const TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  FloatingActionButton.extended(
+                    heroTag: 'subir-modelo',
+                    onPressed: () async {
+                      try {
+                        final modelo = await seleccionarModelo3D();
+                        if (!mounted || modelo == null) return;
+                        setState(() => _modeloSeleccionado = modelo);
+                      } catch (error) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'No se pudo seleccionar el modelo 3D: $error',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    label: const Text('ELEGIR MODELO 3D'),
+                  ),
+                  FloatingActionButton.extended(
+                    heroTag: 'cargar-modelo',
+                    onPressed: _estaSubiendoModelo ? null : _cargarModelo3D,
+                    label: Text(
+                      _estaSubiendoModelo ? 'CARGANDO...' : 'CARGAR MODELO 3D',
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           Text(
-            'DESCRIPCION COMPLETA DE LA PUBLICACION',
+            'SUBIR UNA IMAGEN PARA LA PRESENTACION',
+            style: TextStyle(color: Colors.white, fontSize: 30.0),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(bottom: 70.0),
+                child: _imagenSeleccionada == null
+                    ? SvgPicture.asset(
+                        'assets/images/subir-dos.svg',
+                        width: 350,
+                        height: 350,
+                      )
+                    : Image.memory(
+                        _imagenSeleccionada!,
+                        width: 350,
+                        height: 350,
+                        fit: BoxFit.contain,
+                      ),
+              ),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  FloatingActionButton.extended(
+                    heroTag: 'seleccionar-imagen',
+                    onPressed: _seleccionarImagen,
+                    label: const Text('SELECCIONAR IMAGEN'),
+                  ),
+                  FloatingActionButton.extended(
+                    heroTag: 'cargar-imagen',
+                    onPressed: () {},
+                    label: const Text('SUBIR IMAGEN'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          Text(
+            'DESCRIPCION COMPLETA DEL MODELO',
             style: TextStyle(color: Colors.white, fontSize: 30.0),
           ),
           TextFormField(
+            controller: _controllerDescripcionCompleta,
             maxLines: 8, // Número máximo de líneas visibles
             keyboardType: TextInputType
                 .multiline, // Habilita múltiples líneas en el teclado
@@ -95,15 +271,11 @@ class _AnadirModeloState extends State<AnadirModelo> {
               fontSize: 18.0, // Tamaño de la letra que escribe el usuario
             ),
             decoration: InputDecoration(
-              labelText: 'Escribe tus notas aquí',
+              labelText: 'Escribe las caracteristicas del modelo aquí',
               labelStyle: TextStyle(color: Colors.white),
               hintStyle: TextStyle(color: Colors.white),
               border: OutlineInputBorder(),
             ),
-          ),
-          Text(
-            'SUBIR MAS IMAGENES PARA LA PUBLICACION',
-            style: TextStyle(color: Colors.white, fontSize: 30.0),
           ),
 
           Container(height: 100),

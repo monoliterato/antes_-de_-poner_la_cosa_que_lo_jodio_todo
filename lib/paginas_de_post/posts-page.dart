@@ -1,4 +1,4 @@
-import 'dart:ffi';
+
 
 import 'package:aplicacion/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -105,6 +105,8 @@ class _PostPageState extends State<PostPage> {
                         String titulo = document['titulo'] ?? '';
                         String descripcionCorta =
                             document['descripcionCorta'] ?? '';
+                        String descripcionCompleta =
+                            document['descripcionCompleta'] ?? '';
                         String imagenUrl = document['imagenUrl'] ?? '';
 
                         return ImageCard(
@@ -113,6 +115,7 @@ class _PostPageState extends State<PostPage> {
                           imageUrl: imagenUrl,
                           titulo: titulo,
                           descripcionCorta: descripcionCorta,
+                          descripcionCompleta: descripcionCompleta,
                         );
                       },
                     );
@@ -191,12 +194,14 @@ class ImageCard extends StatefulWidget {
     required this.imageUrl,
     required this.titulo,
     required this.descripcionCorta,
+    required this.descripcionCompleta,
   });
 
   final String postId;
   final String imageUrl;
   final String titulo;
   final String descripcionCorta;
+  final String descripcionCompleta;
 
   @override
   State<ImageCard> createState() => _ImageCardState();
@@ -220,6 +225,7 @@ class _ImageCardState extends State<ImageCard>
               extra: {
                 'titulo': widget.titulo,
                 'descripcionCorta': widget.descripcionCorta,
+                'descripcionCompleta':widget.descripcionCompleta,
                 'imagenUrl': widget.imageUrl,
               },
             );
@@ -283,10 +289,11 @@ class _ImageCardState extends State<ImageCard>
                 onPressed: () => context.go(
                   '/post-page/editar-post',
                   extra: {
-                    'oldIdentificador': Key,
+                    'oldIdentificador': widget.postId,
                     'oldTitulo': widget.titulo,
                     'oldDescripcionCorta': widget.descripcionCorta,
-                    'oldImagenUrl': widget.imageUrl,
+                    'oldDescripcionCompleta': widget.descripcionCompleta,
+                    'oldImageUrl': widget.imageUrl,
                   },
                 ),
                 icon: const Icon(Icons.person),

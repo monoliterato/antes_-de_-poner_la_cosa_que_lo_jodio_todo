@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class PostUnico extends StatefulWidget {
   final String titulo;
   final String descripcionCorta;
+  final String? descripcionCompleta;
   final String imageUrl;
 
   const PostUnico({
     super.key,
     required this.titulo,
     required this.descripcionCorta,
+    required this.descripcionCompleta,
     required this.imageUrl,
   });
 
@@ -108,15 +111,12 @@ class _PostUnicoState extends State<PostUnico> {
                           offset: Offset(30, -20),
                           targetAnchor: Alignment.bottomLeft,
                           followerAnchor: Alignment.bottomLeft,
-                          child: Positioned(
-                            top: 1000,
-                            child: Text(
-                              widget.titulo,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 50,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          child: Text(
+                            widget.titulo,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 50,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -131,13 +131,51 @@ class _PostUnicoState extends State<PostUnico> {
                       widget.descripcionCorta,
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
-                    Stack(
-                      children: [
-                        Text(
-                          'Elit proident cillum aliqua pariatur cillum reprehenderit deserunt in. Ex veniam minim ad in nisi ea eu enim ex id est voluptate proident excepteur. Anim ut ut cupidatat commodo nostrud sunt eu velit mollit cupidatat et. Laborum in sit eu nulla exercitation culpa duis quis aute proident. sunt sunt cupidatat laboris est aliqua. Nostrud consequat ullamco excepteur laborum.Sit eiusmod occaecat aute quis. Ea eu ex adipisicing nulla exercitation magna est sunt ut mollit et officia. Tempor magna ex incididunt non aute.Sint sint ad culpa tempor cupidatat aliquip nostrud laborum laborum sint deserunt. Non id consequat officia cupidatat eiusmod quis laboris nostrud veniam irure nostrud duis fugiat eu. Enim sunt officia nostrud eiusmod sint nulla minim eu irure proident adipisicing pariatur non. Qui est velit irure mollit in cupidatat veniam enim do.Enim amet aute deserunt incididunt cillum commodo duis in magna consectetur. Sit nostrud voluptate do excepteur do nisi consectetur quis. Tempor aliquip ex proident et non. Ut mollit eu eu consequat Lorem occaecat mollit ea laborum. Reprehenderit elit do est aliquip anim. Sint excepteur magna consectetur cupidatat non id id nulla. Nulla officia ullamco occaecat reprehenderit ipsum exercitation ea occaecat occaecat in dolor aliquip.',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: MediaQuery.sizeOf(context).width * 0.1,
+                          left: MediaQuery.sizeOf(context).width*0.1,
                         ),
-                      ],
+                        child:
+                            (widget.descripcionCompleta?.trim().isNotEmpty ??
+                                false)
+                            ? MarkdownBody(
+                                data: widget.descripcionCompleta!,
+                                styleSheet: MarkdownStyleSheet(
+                                  p: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
+                                  h1: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  h2: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  h3: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  a: const TextStyle(
+                                    color: Colors.lightBlueAccent,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                'No hay descripción larga disponible.',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 18,
+                                ),
+                              ),
+                      ),
                     ),
                   ],
                 ),

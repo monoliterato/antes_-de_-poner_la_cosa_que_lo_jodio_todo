@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:aplicacion/paginas_de_post/metodos-posts.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,6 +13,7 @@ class EditarPost extends StatefulWidget {
 final String oldIdentificador;
 final String oldTitulo;
 final String oldDescripcionCorta;
+final String oldDescripcionCompleta;
 final String oldImageUrl;
 
 
@@ -22,7 +22,8 @@ final String oldImageUrl;
   required this.oldIdentificador,
     required this.oldTitulo,
     required this.oldDescripcionCorta,
-    required this.oldImageUrl,});
+  required this.oldDescripcionCompleta,
+  required this.oldImageUrl,});
 
   @override
   State<EditarPost> createState() => _EditarPostState();
@@ -32,7 +33,8 @@ class _EditarPostState extends State<EditarPost> {
   final firestoreService _firestoreService = firestoreService();
 
   //imagen a subir
-  File? image_to_upload;
+  XFile? image_to_upload;
+  Uint8List? _imageBytes;
   String? _imageUrl;
   bool _isSaving = false;
 
@@ -47,10 +49,16 @@ class _EditarPostState extends State<EditarPost> {
   }) async {
     final pickedFiles = await ImagePicker().pickMultiImage();
 
-    return pickedFiles.take(maxImages).map((file) {
+    return Future.wait(pickedFiles.take(maxImages).map((file) async {
       final String extension = file.path.split('.').last;
-      return ImageFile(file.path, name: file.name, extension: extension);
-    }).toList();
+      return ImageFile(
+        file.path,
+        name: file.name,
+        extension: extension,
+        bytes: await file.readAsBytes(),
+        path: kIsWeb ? null : file.path,
+      );
+    }));
   }
 
   late final MultiImagePickerController controller;
@@ -61,6 +69,7 @@ class _EditarPostState extends State<EditarPost> {
 
     controllerTitulo.text = widget.oldTitulo;
     controllerDescripcionCorta.text = widget.oldDescripcionCorta;
+    controllerDescripcionCompleta.text = widget.oldDescripcionCompleta;
     
     controller = MultiImagePickerController(
       maxImages: 15,
@@ -155,13 +164,27 @@ class _EditarPostState extends State<EditarPost> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                image_to_upload != null
-                    ? Image.file(image_to_upload!, width: 350, height: 350)
-                    : SvgPicture.asset(
-                        'assets/images/subir-dos.svg',
-                        width: 350,
-                        height: 350,
-                      ),
+                if (_imageBytes != null)
+                  Image.memory(_imageBytes!, width: 350, height: 350)
+                else if (widget.oldImageUrl.isNotEmpty)
+                  Image.network(
+                    widget.oldImageUrl,
+                    width: 350,
+                    height: 350,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        SvgPicture.asset(
+                          'assets/images/subir-dos.svg',
+                          width: 350,
+                          height: 350,
+                        ),
+                  )
+                else
+                  SvgPicture.asset(
+                    'assets/images/subir-dos.svg',
+                    width: 350,
+                    height: 350,
+                  ),
                 Container(
                   margin: const EdgeInsets.only(bottom: 20.0),
                   child: Row(
@@ -172,8 +195,12 @@ class _EditarPostState extends State<EditarPost> {
                         onPressed: () async {
                           final imagenSeleccionada = await getImage();
                           if (imagenSeleccionada == null || !mounted) return;
+                          final imageBytes =
+                              await imagenSeleccionada.readAsBytes();
+                          if (!mounted) return;
                           setState(() {
-                            image_to_upload = File(imagenSeleccionada.path);
+                            image_to_upload = imagenSeleccionada;
+                            _imageBytes = imageBytes;
                             _imageUrl = null;
                           });
                         },
@@ -192,7 +219,7 @@ class _EditarPostState extends State<EditarPost> {
                           }
                           try {
                             final imageUrl = await uploadImageToFirebaseStorage(
-                              XFile(image_to_upload!.path),
+                              image_to_upload!,
                               DateTime.now().microsecondsSinceEpoch.toString(),
                             );
                             if (!mounted) return;
@@ -261,24 +288,24 @@ class _EditarPostState extends State<EditarPost> {
             onPressed: _isSaving
                 ? null
                 : () async {
-                    if (image_to_upload == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Selecciona una imagen primero.'),
-                        ),
-                      );
-                      return;
-                    }
-
                     setState(() => _isSaving = true);
                     try {
                       final imageUrl =
                           _imageUrl ??
-                          await uploadImageToFirebaseStorage(
-                            XFile(image_to_upload!.path),
-                            DateTime.now().microsecondsSinceEpoch.toString(),
-                          );
-                      await _firestoreService.updatePost(widget.oldIdentificador, controllerTitulo.text, controllerDescripcionCorta.text, controllerDescripcionCompleta.text, imageUrl);
+                          (image_to_upload != null
+                              ? await uploadImageToFirebaseStorage(
+                                  image_to_upload!,
+                                  DateTime.now().microsecondsSinceEpoch
+                                      .toString(),
+                                )
+                              : widget.oldImageUrl);
+                      await _firestoreService.updatePost(
+                        widget.oldIdentificador,
+                        controllerTitulo.text,
+                        controllerDescripcionCorta.text,
+                        controllerDescripcionCompleta.text,
+                        imageUrl,
+                      );
                       /*  controllerTitulo.text,
                         controllerDescripcionCorta.text,
                         controllerDescripcionCompleta.text,
@@ -296,7 +323,7 @@ class _EditarPostState extends State<EditarPost> {
                     }
                   },
             child: Text(
-              'AÑADIR POST',
+              'EDITAR POST',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.black,

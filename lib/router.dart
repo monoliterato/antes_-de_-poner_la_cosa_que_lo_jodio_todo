@@ -110,6 +110,7 @@ final GoRouter router = GoRouter(
                     return PostUnico(
                       titulo: data['titulo']?.toString() ?? 'Sin título',
                       descripcionCorta: data['descripcionCorta']?.toString() ?? 'Sin descripción',
+                      descripcionCompleta: data['descripcionCompleta']?.toString() ?? 'Sin descripción',
                       imageUrl: data['imagenUrl']?.toString() ?? '',
                     
                     );
@@ -126,10 +127,13 @@ final GoRouter router = GoRouter(
                     final extra =state.extra;
                     final data =extra is Map ? extra : <String, dynamic>{};
                     return EditarPost(
-                      oldIdentificador: data['identificador']?.toString() ?? 'Sin título',
-                      oldTitulo: data['titulo']?.toString() ?? 'Sin título',
-                      oldDescripcionCorta: data['descripcionCorta']?.toString() ?? 'Sin descripción',
-                      oldImageUrl: data['imagenUrl']?.toString() ?? '',
+                      oldIdentificador: data['oldIdentificador']?.toString() ?? '',
+                      oldTitulo: data['oldTitulo']?.toString() ?? '',
+                      oldDescripcionCorta:
+                          data['oldDescripcionCorta']?.toString() ?? '',
+                      oldDescripcionCompleta:
+                          data['oldDescripcionCompleta']?.toString() ?? '',
+                      oldImageUrl: data['oldImageUrl']?.toString() ?? '',
                     
                     );
 
