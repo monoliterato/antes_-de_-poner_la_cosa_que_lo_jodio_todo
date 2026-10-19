@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 
 final FirebaseStorage _storage = FirebaseStorage.instance;
-
-
-
 
 Future<PlatformFile?> seleccionarModelo3D() async {
   final files = await FilePicker.pickFiles(
@@ -53,17 +51,36 @@ Future<String> subirModelo3DAFirebase(
   return modelRef.getDownloadURL();
 }
 
+//fin de los metodos para subir el elemento 3d
 
+//inicio para subir los metodos de imagen
 
+//clase para manejar la subida de imagenes a Firebase Storage
 
+Future<String> uploadImageToFirebaseStorage(
+  XFile image,
+  String imageModeloId,
+) async {
+  final Reference storageRef = _storage.ref().child(
+    'modelo_images/$imageModeloId-${image.name}',
+  );
+  await storageRef.putData(
+    await image.readAsBytes(),
+    SettableMetadata(contentType: image.mimeType),
+  );
+  return storageRef.getDownloadURL();
+}
 
+//clase para manejar la seleccion de imagenes desde la galeria del dispositivo
 
+Future<XFile?> getImage() async {
+  final ImagePicker picker = ImagePicker();
+  return picker.pickImage(source: ImageSource.gallery);
+}
 
+//fin metodos para imagen
 
 //datos literales
-
-
-
 
 class ModeloFirestoreService {
   final CollectionReference<Map<String, dynamic>> modelos = FirebaseFirestore
@@ -75,12 +92,14 @@ class ModeloFirestoreService {
     required String descripcionCorta,
     required String descripcionCompleta,
     required String modeloUrl,
+    required String modelImageUrl,
   }) {
     return modelos.add({
       'titulo': titulo,
       'descripcionCorta': descripcionCorta,
       'descripcionCompleta': descripcionCompleta,
       'modeloUrl': modeloUrl,
+      'modelImageUrl': modelImageUrl,
       'timestamp': Timestamp.now(),
     });
   }

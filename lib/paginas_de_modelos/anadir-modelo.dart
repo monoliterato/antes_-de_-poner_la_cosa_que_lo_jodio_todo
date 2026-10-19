@@ -15,6 +15,11 @@ class AnadirModelo extends StatefulWidget {
 }
 
 class _AnadirModeloState extends State<AnadirModelo> {
+  XFile? _imageToUpload;
+  Uint8List? _imageBytes;
+  String? _imageUrl;
+  bool _estaSubiendoImagen = false;
+
   final TextEditingController controllerTitulo = TextEditingController();
   final TextEditingController _controllerDescripcionCorta =
       TextEditingController();
@@ -23,7 +28,6 @@ class _AnadirModeloState extends State<AnadirModelo> {
   final ModeloFirestoreService _modeloFirestoreService =
       ModeloFirestoreService();
   PlatformFile? _modeloSeleccionado;
-  Uint8List? _imagenSeleccionada;
   bool _estaSubiendoModelo = false;
 
   @override
@@ -50,6 +54,15 @@ class _AnadirModeloState extends State<AnadirModelo> {
       );
       return;
     }
+    final modelImageUrl = _imageUrl;
+    if (modelImageUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Primero sube la imagen de presentación.'),
+        ),
+      );
+      return;
+    }
 
     setState(() => _estaSubiendoModelo = true);
     try {
@@ -59,6 +72,7 @@ class _AnadirModeloState extends State<AnadirModelo> {
         titulo: titulo,
         descripcionCorta: _controllerDescripcionCorta.text.trim(),
         descripcionCompleta: _controllerDescripcionCompleta.text.trim(),
+        modelImageUrl: modelImageUrl,
         modeloUrl: modeloUrl,
       );
 
@@ -78,19 +92,35 @@ class _AnadirModeloState extends State<AnadirModelo> {
     }
   }
 
-  Future<void> _seleccionarImagen() async {
-    try {
-      final imagen = await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (imagen == null || !mounted) return;
+  Future<void> _subirImagenModelo() async {
+    final imagen = _imageToUpload;
+    if (imagen == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Primero selecciona una imagen.')),
+      );
+      return;
+    }
 
-      final bytes = await imagen.readAsBytes();
+    setState(() => _estaSubiendoImagen = true);
+    try {
+      final imageUrl = await uploadImageToFirebaseStorage(
+        imagen,
+        DateTime.now().microsecondsSinceEpoch.toString(),
+      );
       if (!mounted) return;
-      setState(() => _imagenSeleccionada = bytes);
+      setState(() => _imageUrl = imageUrl);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Imagen subida correctamente.')),
+      );
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo seleccionar la imagen: $error')),
+        SnackBar(content: Text('No se pudo subir la imagen: $error')),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _estaSubiendoImagen = false);
+      }
     }
   }
 
@@ -223,21 +253,13 @@ class _AnadirModeloState extends State<AnadirModelo> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                margin: EdgeInsets.only(bottom: 70.0),
-                child: _imagenSeleccionada == null
-                    ? SvgPicture.asset(
-                        'assets/images/subir-dos.svg',
-                        width: 350,
-                        height: 350,
-                      )
-                    : Image.memory(
-                        _imagenSeleccionada!,
-                        width: 350,
-                        height: 350,
-                        fit: BoxFit.contain,
-                      ),
-              ),
+              _imageBytes != null
+                  ? Image.memory(_imageBytes!, width: 350, height: 350)
+                  : SvgPicture.asset(
+                      'assets/images/subir-dos.svg',
+                      width: 350,
+                      height: 350,
+                    ),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -245,13 +267,25 @@ class _AnadirModeloState extends State<AnadirModelo> {
                 children: [
                   FloatingActionButton.extended(
                     heroTag: 'seleccionar-imagen',
-                    onPressed: _seleccionarImagen,
+                    onPressed: () async {
+                      final imagenSeleccionada = await getImage();
+                      if (imagenSeleccionada == null || !mounted) return;
+                      final imageBytes = await imagenSeleccionada.readAsBytes();
+                      if (!mounted) return;
+                      setState(() {
+                        _imageToUpload = imagenSeleccionada;
+                        _imageBytes = imageBytes;
+                        _imageUrl = null;
+                      });
+                    },
                     label: const Text('SELECCIONAR IMAGEN'),
                   ),
                   FloatingActionButton.extended(
                     heroTag: 'cargar-imagen',
-                    onPressed: () {},
-                    label: const Text('SUBIR IMAGEN'),
+                    onPressed: _estaSubiendoImagen ? null : _subirImagenModelo,
+                    label: Text(
+                      _estaSubiendoImagen ? 'SUBIENDO...' : 'SUBIR IMAGEN',
+                    ),
                   ),
                 ],
               ),
@@ -276,6 +310,12 @@ class _AnadirModeloState extends State<AnadirModelo> {
               hintStyle: TextStyle(color: Colors.white),
               border: OutlineInputBorder(),
             ),
+          ),
+
+          FloatingActionButton.extended(
+            heroTag: 'guardar-modelo',
+            onPressed: _estaSubiendoModelo ? null : _cargarModelo3D,
+            label: Text(_estaSubiendoModelo ? 'CARGANDO...' : 'CARGAR MODELO'),
           ),
 
           Container(height: 100),
