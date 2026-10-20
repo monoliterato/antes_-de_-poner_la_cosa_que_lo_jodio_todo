@@ -22,13 +22,18 @@ class _AnadirModeloState extends State<AnadirModelo> {
 
   final TextEditingController controllerTitulo = TextEditingController();
   final TextEditingController _controllerDescripcionCorta =
-      TextEditingController();
+      TextEditingController(); 
   final TextEditingController _controllerDescripcionCompleta =
       TextEditingController();
   final ModeloFirestoreService _modeloFirestoreService =
       ModeloFirestoreService();
   PlatformFile? _modeloSeleccionado;
   bool _estaSubiendoModelo = false;
+
+
+
+
+  //metodo para borrar el contenido de los formularios
 
   @override
   void dispose() {
@@ -37,6 +42,11 @@ class _AnadirModeloState extends State<AnadirModelo> {
     _controllerDescripcionCompleta.dispose();
     super.dispose();
   }
+
+
+
+
+
 
   Future<void> _cargarModelo3D() async {
     final modelo = _modeloSeleccionado;
@@ -54,11 +64,10 @@ class _AnadirModeloState extends State<AnadirModelo> {
       );
       return;
     }
-    final modelImageUrl = _imageUrl;
-    if (modelImageUrl == null) {
+    if (_imageToUpload == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Primero sube la imagen de presentación.'),
+          content: Text('Primero selecciona la imagen de presentación.'),
         ),
       );
       return;
@@ -66,8 +75,17 @@ class _AnadirModeloState extends State<AnadirModelo> {
 
     setState(() => _estaSubiendoModelo = true);
     try {
+
+      //primero se sube la imagen
+  final modelImageUrl = await _subirImagenModelo();
+  if (modelImageUrl == null) return;
+      
+      //luego se sube el modelo 3d
       final modelId = DateTime.now().microsecondsSinceEpoch.toString();
       final modeloUrl = await subirModelo3DAFirebase(modelo, modelId);
+
+
+      //luego se sube los datos y las rutas
       await _modeloFirestoreService.agregarModelo(
         titulo: titulo,
         descripcionCorta: _controllerDescripcionCorta.text.trim(),
@@ -76,12 +94,12 @@ class _AnadirModeloState extends State<AnadirModelo> {
         modeloUrl: modeloUrl,
       );
 
-      if (!mounted) return;
+      if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Modelo cargado correctamente.')),
       );
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('No se pudo cargar el modelo: $error')),
       );
@@ -92,13 +110,13 @@ class _AnadirModeloState extends State<AnadirModelo> {
     }
   }
 
-  Future<void> _subirImagenModelo() async {
+  Future<String?> _subirImagenModelo() async {
     final imagen = _imageToUpload;
     if (imagen == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Primero selecciona una imagen.')),
       );
-      return;
+      return null;
     }
 
     setState(() => _estaSubiendoImagen = true);
@@ -107,16 +125,18 @@ class _AnadirModeloState extends State<AnadirModelo> {
         imagen,
         DateTime.now().microsecondsSinceEpoch.toString(),
       );
-      if (!mounted) return;
+      if (!mounted) return null;
       setState(() => _imageUrl = imageUrl);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Imagen subida correctamente.')),
       );
+      return imageUrl;
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('No se pudo subir la imagen: $error')),
       );
+      return null;
     } finally {
       if (mounted) {
         setState(() => _estaSubiendoImagen = false);

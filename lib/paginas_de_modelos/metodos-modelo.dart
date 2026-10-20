@@ -87,14 +87,14 @@ class ModeloFirestoreService {
       .instance
       .collection('modelos');
 
-  Future<DocumentReference<Map<String, dynamic>>> agregarModelo({
+  Future<void> agregarModelo({
     required String titulo,
     required String descripcionCorta,
     required String descripcionCompleta,
     required String modeloUrl,
     required String modelImageUrl,
-  }) {
-    return modelos.add({
+  }) async {
+    await modelos.add({
       'titulo': titulo,
       'descripcionCorta': descripcionCorta,
       'descripcionCompleta': descripcionCompleta,
@@ -102,5 +102,35 @@ class ModeloFirestoreService {
       'modelImageUrl': modelImageUrl,
       'timestamp': Timestamp.now(),
     });
+  }
+
+
+//obtener los datos
+
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getModeloStream() {
+    return modelos.orderBy('timestamp', descending: true).snapshots();
+  }
+
+  //Update
+  Future<void> updatePost(
+    String docId,
+    String newTitulo,
+    String newDescripcionCorta,
+    String newDescripcionCompleta,
+    String newModelImageUrl,
+  ) {
+    return modelos.doc(docId).update({
+      'titulo': newTitulo,
+      'descripcionCorta': newDescripcionCorta,
+      'descripcionCompleta': newDescripcionCompleta,
+      'modelImageUrl': newModelImageUrl,
+      'timestamp': Timestamp.now(),
+    });
+  }
+
+  //Delete
+  Future<void> deletePost(String docId) {
+    return modelos.doc(docId).delete();
   }
 }
