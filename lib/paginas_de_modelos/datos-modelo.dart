@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 class DatosModelo extends StatefulWidget {
-  const DatosModelo({super.key});
+  const DatosModelo({
+    super.key,
+    this.titulo = 'Modelo 3D',
+    this.descripcionCorta = '',
+    this.descripcionCompleta = '',
+  });
+
+  final String titulo;
+  final String descripcionCorta;
+  final String descripcionCompleta;
 
   @override
   State<DatosModelo> createState() => _DatosModeloState();
@@ -12,43 +21,17 @@ class DatosModelo extends StatefulWidget {
 
 class _DatosModeloState extends State<DatosModelo> {
   late final LayerLink ancla = LayerLink();
-  final String markdownContent = '''
-  # Título del Documento
-  Este es un ejemplo de **texto enriquecido**.
-  
-  ### Requisitos:
-  * Flutter SDK configurado
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Dependencia agregada al archivo `pubspec.yaml`
-  * Flutter SDK configurado
-  * Flutter SDK configurado
-  * Flutter SDK configurado
-  * Flutter SDK configurado
-  * Flutter SDK configurado
-  * Flutter SDK configurado
-  * Flutter SDK configurado
-  * Flutter SDK configurado
-  * Flutter SDK configurado
-  ------- Flutter SDK configurado
-  - Flutter SDK configurado
-  
-  
-  Visita la documentación en [Flutter Pub](https://pub.dev).
-  ''';
+
+  String get markdownContent =>
+      '''
+# ${widget.titulo}
+
+## Descripción corta
+${widget.descripcionCorta.isEmpty ? 'Sin descripción corta.' : widget.descripcionCorta}
+
+## Descripción completa
+${widget.descripcionCompleta.isEmpty ? 'Sin descripción completa.' : widget.descripcionCompleta}
+''';
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +46,6 @@ class _DatosModeloState extends State<DatosModelo> {
                 color: Colors.transparent,
                 height: MediaQuery.of(context).size.height * 0.8,
                 width: MediaQuery.of(context).size.width * 0.85,
-
                 padding: const EdgeInsetsDirectional.symmetric(),
                 child: Stack(
                   children: [
@@ -105,26 +87,16 @@ class _DatosModeloState extends State<DatosModelo> {
                                             height: 1.5,
                                           ),
                                         ),
-                                    onTapLink: (text, href, title) {
-                                      if (href != null) {
-                                        debugPrint('Abriendo enlace: ');
-                                      }
-                                    },
                                   ),
-                                  
                                 ),
-
                                 ListTile(
-                                  title: Container(
-                                    child: FloatingActionButton.extended(
-                                      heroTag: 'close-data',
-                                      shape: const StadiumBorder(),
-                                      onPressed: () => context.pop(),
-                                      icon: const Icon(Icons.person),
-                                      label: const Text('Salir'),
-                                    ),
+                                  title: FloatingActionButton.extended(
+                                    heroTag: 'close-data',
+                                    shape: const StadiumBorder(),
+                                    onPressed: () => context.pop(),
+                                    icon: const Icon(Icons.person),
+                                    label: const Text('Salir'),
                                   ),
-                                  onTap: () {},
                                 ),
                               ],
                             ),

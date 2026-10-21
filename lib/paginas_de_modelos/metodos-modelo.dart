@@ -112,6 +112,10 @@ class ModeloFirestoreService {
     return modelos.orderBy('timestamp', descending: true).snapshots();
   }
 
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getModeloById(String id) {
+    return modelos.doc(id).snapshots();
+  }
+
   //Update
   Future<void> updatePost(
     String docId,
