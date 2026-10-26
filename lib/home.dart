@@ -10,20 +10,13 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapMove: (details) {
-        print(details.delta.dx);
-      },
-      child: Container(
-        padding: EdgeInsets.all(8.0),
-        margin: EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8.0),
-          color: Colors.red,
-        ),
-        child: Text('pagina principal'),
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(width: 10, decoration: BoxDecoration(color: Colors.amber)),
+        Container(width: 20, decoration: BoxDecoration(color: Colors.red)),
+      ],
     );
   }
 }
-
