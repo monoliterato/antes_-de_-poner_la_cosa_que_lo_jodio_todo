@@ -37,11 +37,7 @@ class Modelos extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 24, bottom: 16),
                 child: Column(
                   children: [
-                    FloatingActionButton.extended(
-                      heroTag: 'modelos-modelo-unico',
-                      onPressed: () => context.push('/modelos/modelo-unico'),
-                      label: const Text('unico'),
-                    ),
+                    
                     const SizedBox(height: 16),
                     FloatingActionButton.extended(
                       heroTag: 'modelos-anadir-modelo',
@@ -56,8 +52,7 @@ class Modelos extends StatelessWidget {
 
             final modelo = modelos[index].data();
             final titulo = modelo['titulo']?.toString() ?? '';
-            final descripcionCorta =
-                modelo['descripcionCorta']?.toString() ?? '';
+            final descripcionCorta = modelo['descripcionCorta']?.toString() ?? '';
             final modelImageUrl = modelo['modelImageUrl']?.toString() ?? '';
 
             return GestureDetector(
